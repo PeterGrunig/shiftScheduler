@@ -63,6 +63,13 @@ func save(w http.ResponseWriter, r *http.Request) {
 	shifts[username] = schedule
 	schedule.PrintSchedule()
 
+	//Update the schedule in the user's session as well
+	// if session, exists := sessions[username]; exists {
+	// 	session.Schedule = schedule
+	// 	sessions[username] = session
+	// }
+	
+
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -77,25 +84,23 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func adminHandler(w http.ResponseWriter, r *http.Request) {
-	_, ok := verifySession(w, r, 2)
+	username, ok := verifySession(w, r, 2)
 	if !ok {
 		return
 	}
-	ts, err := template.ParseFiles("./templates/student.html", "./templates/schedule.html")
+	ts, err := template.ParseFiles("./templates/admin.html", "./templates/schedule.html")
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		log.Println("Error parsing templates:", err)
 		return
 	}
 
-	//Get a schedule from the shifts map
-	var schedule Schedule
-	for _, s := range shifts {
-		schedule = s
-		break
-	}
+	session := sessions[username]
 
-	ts.Execute(w, map[string]interface{}{"Schedule": schedule, "CanWrite": false})
+	schedule := session.StudentSchedule
+	studentUsername := session.StudentUsername
+
+	ts.Execute(w, map[string]interface{}{"Schedule": schedule, "CanWrite": false, "Username": studentUsername})
 }
 
 func loginHandlerPost(w http.ResponseWriter, r *http.Request) {
@@ -183,4 +188,45 @@ func verifySession(w http.ResponseWriter, r *http.Request, role int) (string, bo
 		return "", false
 	}
 	return userSession.username, true
+}
+
+
+func adminAccountSelector(w http.ResponseWriter, r *http.Request) {
+	username, ok := verifySession(w, r, 2)
+	if !ok {
+		return
+	}
+
+	ts , err := template.ParseFiles("./templates/selectUserAdmin.html")
+	if err != nil {
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		log.Println("Error parsing template:", err)
+		return
+	}
+	//get a list of usernames with the role of student
+	var students []string
+	for username, role := range users {
+		if role.Role == "student" {
+			students = append(students, username)
+		}
+	}
+
+	ts.Execute(w, map[string]interface{}{"Users": students})
+
+	studentUsername := r.FormValue("user")
+	// if studentUsername != "" {
+	// 	log.Printf("Admin selected user: %s\n", studentUsername)
+	// 	http.Redirect(w, r, "/admin?user="+studentUsername, http.StatusSeeOther)
+	// 	return
+	// }
+
+	session := sessions[username]
+	session.StudentUsername = studentUsername
+	session.StudentSchedule = shifts[studentUsername]
+	
+	fmt.Printf("Admin %s selected student %s with schedule: %+v\n", username, studentUsername, session.StudentSchedule)
+
+	http.Redirect(w, r, "/admin/schedule", http.StatusSeeOther)
+
+
 }

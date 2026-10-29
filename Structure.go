@@ -9,13 +9,16 @@ import (
 type User struct {
 	Password string
 	Role    string
-	//Schedule Schedule
+	
 }
 
 type session struct {
 	username string
 	expiry time.Time
 	role string
+	Schedule Schedule
+	StudentUsername string
+	StudentSchedule Schedule
 }
 
 var sessions = map[string]session{} // Map to store session tokens and associated usernames

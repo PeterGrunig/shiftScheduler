@@ -1,0 +1,27 @@
+<head>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<header>
+    <h1>Admin Account Selector</h1>
+</header>
+<main>
+    <div class="content">
+        <h2>Select a user to view</h2>
+
+        <form id="adminSelectForm" method="get" action="" style="margin-bottom: 1.5rem;">
+            <label for="userSelect" style="display: block; margin-bottom: 0.5rem;">Choose a user:</label>
+            <select id="userSelect" name="user" style="width: 100%; max-width: 320px; padding: 0.65rem;">
+                <option value="">-- choose a user --</option>
+                {{range .Users}}
+                    <option value="{{.}}" {{if eq . $.SelectedUser}}selected{{end}}>{{.}}</option>
+                {{end}}
+            </select>
+            <button type="submit" style="margin-top: 1rem; padding: 0.75rem 1.25rem;">Select User</button>
+        </form>
+
+    </div>
+</main>
+<footer>
+    <p>&copy; 2026 Shift Scheduler</p>
+</footer>

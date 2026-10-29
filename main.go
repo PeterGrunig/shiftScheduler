@@ -14,7 +14,8 @@ func main() {
 	mux.HandleFunc("/", loginHandler)
 	mux.HandleFunc("/student", student)
 	mux.HandleFunc("/save", save)
-	mux.HandleFunc("/admin", adminHandler)
+	mux.HandleFunc("/admin", adminAccountSelector)
+	mux.HandleFunc("/admin/schedule", adminHandler)
 	mux.HandleFunc("/login", loginHandlerPost)
 
 	fmt.Println("Server is running on http://localhost:4000")
